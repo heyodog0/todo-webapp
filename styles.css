@@ -4,6 +4,17 @@ body {
     background: #fff;
 }
 
+.block-title:focus,
+.task span:focus,
+.task-details:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.block:focus-within {
+    box-shadow: 0 0 0 2px #007bff;
+}
+
 #app {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
