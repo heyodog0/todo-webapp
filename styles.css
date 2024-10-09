@@ -19,6 +19,15 @@ body {
     overflow-y: auto;
 }
 
+.move-to-top {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 0 5px;
+    margin-right: 5px;
+}
+
 .block-header {
     display: flex;
     justify-content: space-between;
