@@ -3,25 +3,40 @@ let blocks = JSON.parse(localStorage.getItem('blocks')) || [
 ];
 
 function render() {
-    document.getElementById('app').innerHTML = blocks.map(b => `
-        <div class="block" style="background-color:${b.color}" data-id="${b.id}">
-            <div class="block-header">
-                <h2 class="block-title" contenteditable oninput="updateBlockTitle(${b.id}, this.textContent)">${b.title}</h2>
-                <input type="color" class="color-picker" value="${b.color}" onchange="updateBlockColor(${b.id}, this.value)">
-                <button onclick="deleteBlock(${b.id})">×</button>
+    document.getElementById('app').innerHTML = blocks
+        .filter(b => b && typeof b === 'object')
+        .map(b => `
+            <div class="block" style="background-color:${b.color || '#ffffff'}" data-id="${b.id}" draggable="true">
+                <div class="block-header">
+                    <button class="move-to-top" onclick="moveBlockToTop(${b.id})">^</button>
+                    <h2 class="block-title" contenteditable oninput="updateBlockTitle(${b.id}, this.textContent)">${b.title || 'Untitled'}</h2>
+                    <input type="color" class="color-picker" value="${b.color || '#ffffff'}" onchange="updateBlockColor(${b.id}, this.value)">
+                    <button onclick="deleteBlock(${b.id})">×</button>
+                </div>
+                <div class="add-task">
+                    <input type="text" placeholder="Add task" onkeypress="if(event.key==='Enter')addTask(${b.id}, this.value)">
+                    <button onclick="addTask(${b.id}, this.previousElementSibling.value)">+</button>
+                </div>
+                <div class="tasks-container" data-block-id="${b.id}">
+                    ${renderTasks(b.tasks || [], b.id)}
+                </div>
             </div>
-            <div class="add-task">
-                <input type="text" placeholder="Add task" onkeypress="if(event.key==='Enter')addTask(${b.id}, this.value)">
-                <button onclick="addTask(${b.id}, this.previousElementSibling.value)">+</button>
-            </div>
-            <div class="tasks-container" data-block-id="${b.id}">
-                ${renderTasks(b.tasks, b.id)}
-            </div>
-        </div>
-    `).join('');
+        `).join('');
     saveToLocalStorage();
+    // addDragAndDropListeners();
 }
 
+function moveBlockToTop(id) {
+    const blockIndex = blocks.findIndex(b => b && b.id === id);
+    if (blockIndex > 0) {
+        const [block] = blocks.splice(blockIndex, 1);
+        blocks.unshift(block);
+        render();
+    } else if (blockIndex === -1) {
+        console.error(`Block with id ${id} not found`);
+    }
+    // If blockIndex is 0, the block is already at the top, so we do nothing
+}
 function renderTasks(tasks, blockId, isSubtask = false) {
     return tasks.map(t => `
         <div class="task ${isSubtask ? 'subtask' : ''} ${t.completed ? 'completed' : ''}" data-id="${t.id}" data-block-id="${blockId}">
@@ -172,5 +187,16 @@ function moveTaskToTop(blockId, taskId) {
 function saveToLocalStorage() {
     localStorage.setItem('blocks', JSON.stringify(blocks));
 }
+
+// Make sure these functions are in the global scope
+window.moveBlockToTop = moveBlockToTop;
+window.updateBlockTitle = updateBlockTitle;
+window.updateBlockColor = updateBlockColor;
+window.deleteBlock = deleteBlock;
+window.addTask = addTask;
+
+// Clean up any invalid blocks before initial render
+blocks = blocks.filter(b => b && typeof b === 'object' && b.id !== undefined);
+saveToLocalStorage();
 
 render();
