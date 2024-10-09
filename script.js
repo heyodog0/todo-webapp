@@ -28,7 +28,7 @@ function render() {
 
 function renderTasks(tasks, blockId, blockIndex, isSubtask = false, parentIndex = -1) {
     return tasks.map((t, index) => `
-        <div class="task ${isSubtask ? 'subtask' : ''} ${t.completed ? 'completed' : ''}" data-id="${t.id}" data-block-id="${blockId}" data-task-index="${index}">
+        <div class="task ${isSubtask ? 'subtask' : ''} ${t.completed ? 'completed' : ''} ${t.starred ? 'starred' : ''}" data-id="${t.id}" data-block-id="${blockId}" data-task-index="${index}">
             <div class="task-header">
                 <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${blockId}, ${t.id})" 
                        data-block-index="${blockIndex}" data-task-index="${isSubtask ? parentIndex : index}" data-subtask-index="${isSubtask ? index : -1}"
@@ -36,6 +36,7 @@ function renderTasks(tasks, blockId, blockIndex, isSubtask = false, parentIndex 
                 <span contenteditable oninput="updateTask(${blockId}, ${t.id}, this.textContent)" 
                       data-block-index="${blockIndex}" data-task-index="${isSubtask ? parentIndex : index}" data-subtask-index="${isSubtask ? index : -1}"
                       title="Edit task" tabindex="-1">${t.text}</span>
+                <button onclick="starTask(${blockId}, ${t.id})" class="star-task ${t.starred ? 'starred' : ''}" title="Star task (Option + ↑)" tabindex="-1">↑</button>
                 <button onclick="addSubtask(${blockId}, ${t.id})" title="Add subtask (Option + S)" tabindex="-1">+</button>
                 <button onclick="deleteTask(${blockId}, ${t.id})" title="Delete task (Option + Backspace)" tabindex="-1">×</button>
             </div>
@@ -51,6 +52,17 @@ function focusCurrentBlock() {
     const currentBlock = document.querySelector(`.block[data-block-index="${currentFocus.blockIndex}"] .block-title`);
     if (currentBlock) {
         currentBlock.focus();
+    }
+}
+
+
+function starTask(blockId, taskId) {
+    const block = blocks.find(b => b.id === blockId);
+    const task = findTask(taskId, block.tasks);
+    if (task) {
+        task.starred = !task.starred;
+        sortTasks(block.tasks);
+        render();
     }
 }
 
@@ -114,6 +126,11 @@ function handleGlobalKeydown(event) {
                 event.preventDefault();
                 addSubtaskToCurrent();
                 break;
+            case 'ArrowUp':
+                event.preventDefault();
+                starCurrentTask();
+                break;
+        
         }
     } else if (key === 'Enter' && event.target.classList.contains('add-task-input')) {
         addTask(getCurrentBlockId(), event.target.value);
@@ -437,6 +454,39 @@ function drop(e) {
     }
 }
 
+function starCurrentTask() {
+    const blockId = getCurrentBlockId();
+    const taskId = getCurrentTaskId();
+    if (taskId) {
+        starTask(blockId, taskId);
+    }
+}
+
+function sortTasks(tasks) {
+    tasks.sort((a, b) => {
+        if (a.starred === b.starred) {
+            if (a.completed === b.completed) return 0;
+            return a.completed ? 1 : -1;
+        }
+        return a.starred ? -1 : 1;
+    });
+    tasks.forEach(task => {
+        if (task.subtasks && task.subtasks.length > 0) {
+            sortTasks(task.subtasks);
+        }
+    });
+}
+
+function addTask(blockId, text) {
+    if (text.trim()) {
+        const block = blocks.find(b => b.id === blockId);
+        if (block) {
+            block.tasks.push({id: Date.now(), text, completed: false, starred: false, subtasks: [], details: ''});
+            render();
+        }
+    }
+}
+
 // Make sure these functions are in the global scope
 window.moveBlockToTop = moveBlockToTop;
 window.updateBlockTitle = updateBlockTitle;
@@ -447,6 +497,7 @@ window.toggleTask = toggleTask;
 window.updateTask = updateTask;
 window.updateTaskDetails = updateTaskDetails;
 window.handleAddTaskKeydown = handleAddTaskKeydown;
+window.starTask = starTask;
 
 // Clean up any invalid blocks before initial render
 blocks = blocks.filter(b => b && typeof b === 'object' && b.id !== undefined);

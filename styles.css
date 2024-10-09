@@ -56,11 +56,52 @@ body {
     font-family: monospace;
 }
 
+.task button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1em;
+    padding: 0 5px;
+}
+
+.star-task {
+    color: #aaa;
+    transition: color 0.3s ease;
+}
+
+.star-task:hover,
+.star-task.starred {
+    color: #0056b3;
+}
+
 .task {
     margin-bottom: 10px;
     background: rgba(255, 255, 255, 0.7);
     padding: 8px;
     border-radius: 4px;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.task.starred {
+    background-color: #e6f3ff;
+    border-left: 3px solid #0056b3;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.task.completed {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+.task.completed.starred {
+    opacity: 1;
+    background-color: #e6f3ff;
+    border-left-color: #28a745;
+}
+
+.task.completed .star-task.starred {
+    color: #28a745;
 }
 
 .task-header {
