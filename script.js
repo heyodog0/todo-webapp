@@ -356,7 +356,7 @@ function addSubtask(blockId, parentId) {
     const parent = findTask(parentId, block.tasks);
     if (parent) {
         parent.subtasks = parent.subtasks || [];
-        parent.subtasks.push({id: Date.now(), text: "New subtask", completed: false, details: ''});
+        parent.subtasks.push({id: Date.now(), text: "", completed: false, details: ''});
         render();
     }
 }
