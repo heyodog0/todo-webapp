@@ -519,6 +519,7 @@ window.updateTask = updateTask;
 window.updateTaskDetails = updateTaskDetails;
 window.handleAddTaskKeydown = handleAddTaskKeydown;
 window.starTask = starTask;
+window.addBlock = addBlock
 
 // Clean up any invalid blocks before initial render
 blocks = blocks.filter(b => b && typeof b === 'object' && b.id !== undefined);
