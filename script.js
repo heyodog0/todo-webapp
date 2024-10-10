@@ -487,6 +487,27 @@ function addTask(blockId, text) {
     }
 }
 
+function addBlock() {
+    const title = document.getElementById('newBlockTitle').value.trim();
+    const color = document.getElementById('newBlockColor').value;
+
+    if (title) {
+        const newBlock = {
+            id: Date.now(),
+            title: title,
+            color: color,
+            tasks: []
+        };
+
+        blocks.push(newBlock);
+        render();
+
+        // Clear the input field after adding the block
+        document.getElementById('newBlockTitle').value = '';
+        document.getElementById('newBlockColor').value = '#ffffff';
+    }
+}
+
 // Make sure these functions are in the global scope
 window.moveBlockToTop = moveBlockToTop;
 window.updateBlockTitle = updateBlockTitle;
